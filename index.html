@@ -1,0 +1,198 @@
+<HTML>
+<TITLE>
+CodeRoad Examples Lib
+</TITLE>
+<BODY>
+<H4>Examples for your EntityFramework 6.x Windows Presentation Forms App</H4>
+<OL>
+<LI>How to connect to you WPF by EF 6.x
+<p>SellDBEntities DB = new SellDBEntities();<br>
+   this.DB_Sell.ItemsSource = DB.Class_Of_Your_DB.ToList();
+<LI>How to transfer your selection from DataGrid to the object in your WPF
+<p> if(this.DB_Sell.SelectedIndex >= 0)<br>
+            {<br>
+                if (this.DB_Sell.SelectedItems.Count >= 0)<br>
+                {<br>
+                    if(this.DB_Sell.SelectedItems[0].GetType() == typeof(Naimenovanie))<br>
+                    {<br>
+                        Class_Of_Your_DB EditObj = (Class_Of_Your_DB )this.DB_Sell.SelectedItems[0];<br>
+                        ArticulBox.Text = EditObj.Articul;<br>
+                        NaimBox.Text = EditObj.Naimenovanie1;<br>
+                        HeightBox.Text = EditObj.Height.ToString();<br>
+                        WidthBox.Text = EditObj.Width.ToString();<br>
+                        PriceBox.Text = EditObj.Price.ToString();<br>
+                        updatingSellID = EditObj.id;<br>
+                    }<br>
+                }<br>
+            }<br>
+<LI>How to research selected string from DataGrid in your DB for Delete/Edit operations<br>
+SellDBEntities DB = new SellDBEntities();<br>
+            var r = from d in DB.Class_Of_Your_DB<br>
+                              where d.id == updatingSellID<br>
+                              select d;<br>
+            Console.WriteLine(updatingSellID);<br>
+            Class_Of_Your_DB obj = r.SingleOrDefault();<br>
+            if (obj != null)<br>
+            {<br>
+</OL>
+<p><font color=white>
+ Console.WriteLine("Перетащите файл для импорта в окно");<br>
+            string FileWayString = Console.ReadLine();<br>
+            string line;<br>
+            
+            int ArrayLength = 0;<br>
+            int j = 0;<br>
+            StreamReader sr = new StreamReader(FileWayString);<br>
+            while ((line = sr.ReadLine()) != null)<br>
+            {<br>
+                ArrayLength++;<br>
+            }<br>
+            string[] FileToString = new string [ArrayLength];<br>
+            Console.WriteLine("Array created of {0}", ArrayLength);<br>
+            sr.Close();<br>
+            StreamReader sr1 = new StreamReader(FileWayString, System.Text.Encoding.Default);<br>
+            while ((line = sr1.ReadLine()) != null)<br>
+            {<br>
+                FileToString[j] = line;<br>
+                //Console.WriteLine(FileToString[j]);<br>
+                j++;<br>
+            }<br>
+            string[,] StringToDB = new string[ArrayLength, 6];<br>
+            for(int i = 0; i < ArrayLength; i++)<br>
+            {<br>
+                string[] words = FileToString[i].Split(';');<br>
+                for ( j = 0; j < 5; j++)<br>
+                {<br>
+
+                    StringToDB[i, j] = words[j];<br>
+                }<br>
+            }<br>
+            SellDBEntities DB = new SellDBEntities();<br>
+            for(int i = 0; i < ArrayLength; i++)<br>
+            {<br>
+                Class_Of_Your_DB obj1 = new Class_Of_Your_DB ()<br>
+                {<br>
+                    Articul = StringToDB[i, 0],<br>
+                    Naimenovanie1 = StringToDB[i, 1],<br>
+                    Height = Convert.ToInt32(StringToDB[i, 2]),<br>
+                    Width = Convert.ToInt32(StringToDB[i, 3]),<br>
+                    Price = Convert.ToInt32(StringToDB[i, 4])<br>
+                };<br>
+                DB.Class_Of_Your_DB.Add(obj1);<br>
+                DB.SaveChanges();<br>
+            }<br>
+            Console.WriteLine("Transfer Complete!");<br>
+            Console.ReadKey();<br>
+</font>
+<br>
+<p><font color=white>
+public partial class MainWindow : Window<br>
+    {<br>
+        public bool ViewModel { get; set; }<br>
+        public MainWindow()<br>
+        {<br>
+            InitializeComponent();<br>
+            SellDBEntities DB = new SellDBEntities();<br>
+            this.DB_Sell.ItemsSource = DB.Naimenovanie.ToList();<br>
+        }<br>
+        private int updatingSellID = 0;<br>
+        private void DB_SelectionChanged(object sender, SelectionChangedEventArgs e)<br>
+        {<br>
+            if(this.DB_Sell.SelectedIndex >= 0)<br>
+            {<br>
+                if (this.DB_Sell.SelectedItems.Count >= 0)<br>
+                {<br>
+                    if(this.DB_Sell.SelectedItems[0].GetType() == typeof(Naimenovanie))<br>
+                    {<br>
+                        Naimenovanie EditObj = (Naimenovanie)this.DB_Sell.SelectedItems[0];<br>
+                        ArticulBox.Text = EditObj.Articul;<br>
+                        NaimBox.Text = EditObj.Naimenovanie1;<br>
+                        HeightBox.Text = EditObj.Height.ToString();<br>
+                        WidthBox.Text = EditObj.Width.ToString();<br>
+                        PriceBox.Text = EditObj.Price.ToString();<br>
+                        updatingSellID = EditObj.id;<br>
+                    }<br>
+                }<br>
+            }<br>
+        }<br>
+       <br>
+        private void AddItem_Click(object sender, RoutedEventArgs e)<br>
+        {<br>
+            SellDBEntities DB = new SellDBEntities();<br>
+            if (Int32.TryParse(WidthBox.Text.ToString(), out int WRaw) && Int32.TryParse(HeightBox.Text.ToString(), out int HRaw) && Int32.TryParse(PriceBox.Text.ToString(), out int PRaw))
+            {<br>
+                Naimenovanie AddingObj = new Naimenovanie()<br>
+                {<br>
+                    Articul = ArticulBox.Text.ToString(),<br>
+                    Naimenovanie1 = NaimBox.Text.ToString(),<br>
+                    Height = HRaw,<br>
+                    Width = WRaw,<br>
+                    Price = PRaw<br>
+                };<br>
+                DB.Naimenovanie.Add(AddingObj);<br>
+                DB.SaveChanges();<br>
+                MessageBox.Show("Sell", "Товар успешно добавлен", MessageBoxButton.OK);<br>
+            }<br>
+            else<br>
+            {<br>
+                MessageBox.Show("Error", "Товар неуспешно добавлен", MessageBoxButton.OK);<br>
+<br>
+            }<br>
+            this.DB_Sell.ItemsSource = DB.Naimenovanie.ToList();<br>
+        }<br>
+<br>
+        private void EditButton_Click(object sender, RoutedEventArgs e)<br>
+        {<br>
+            SellDBEntities DB = new SellDBEntities();<br>
+            var r = from d in DB.Naimenovanie<br>
+                              where d.id == updatingSellID<br>
+                              select d;<br>
+            Console.WriteLine(updatingSellID);<br>
+            Naimenovanie obj = r.SingleOrDefault();<br>
+            if (obj != null)<br>
+            {<br>
+                MessageBox.Show(ArticulBox.Text + "\n" + NaimBox.Text + "\n" + Convert.ToInt32(HeightBox.Text) + "\n" + Convert.ToInt32(WidthBox.Text) + "\n" + Convert.ToInt32(PriceBox.Text));<br>
+                    obj.Articul = ArticulBox.Text.ToString();<br>
+                    obj.Naimenovanie1 = NaimBox.Text;<br>
+                    obj.Height = Convert.ToInt32(HeightBox.Text);<br>
+                    obj.Width = Convert.ToInt32(WidthBox.Text);<br>
+                    obj.Price = Convert.ToInt32(PriceBox.Text);<br>
+            }<br>
+            else<br>
+            {<br>
+                MessageBox.Show("NULL");<br>
+            }<br>
+            DB.SaveChanges();<br>
+            this.DB_Sell.ItemsSource = DB.Naimenovanie.ToList();<br>
+        }<br>
+
+        private void removeButton_Click(object sender, RoutedEventArgs e)<br>
+        {<br>
+            SellDBEntities DB = new SellDBEntities();<br>
+            var r = from d in DB.Naimenovanie<br>
+                    where d.id == updatingSellID<br>
+                    select d;<br>
+            Console.WriteLine(updatingSellID);<br>
+            Naimenovanie obj = r.SingleOrDefault();<br>
+            if (obj != null)<br>
+            {<br>
+                MessageBoxResult result = MessageBox.Show("Удалить товар?", "", MessageBoxButton.YesNo);<br>
+                switch (result)<br>
+                {<br>
+                    case MessageBoxResult.Yes:<br>
+                        DB.Naimenovanie.Remove(obj);<br>
+                        DB.SaveChanges();<br>
+                        break;<br>
+                }<br>
+
+            }<br>
+            DB.SaveChanges();<br>
+            this.DB_Sell.ItemsSource = DB.Naimenovanie.ToList();<br>
+
+        }<br>
+    }<br>
+</font>
+<HR>
+<p align=center> CodeRoad(c) 2019
+</BODY>
+</HTML>
